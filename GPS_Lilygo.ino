@@ -90,6 +90,7 @@ void gps_payload(float lat, float lon, int alt) {
   payload[9] = alt;
 
   // Imprime os valores de Payload (neste caso são bytes)
+  // Os 8 primeiros bits serão lat, seguido de 8 de long e por fim 4 de alt.
   int x = 0;
   for (x=0; x <=9; x++) {
     Serial.print(payload[x], HEX);

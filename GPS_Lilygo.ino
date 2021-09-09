@@ -12,38 +12,42 @@ String read_sentence;
 void setup()
 {
   Serial.begin(115200);
-  Serial1.begin(9600, SERIAL_8N1, 34, 12);   //17-TX 18-RX
+  Serial1.begin(9600, SERIAL_8N1, 34, 12);   //34-TX 12-RX, refenrete a pinagem da placa Lilygo
 }
 
 
 void loop()
 {
   Serial.print("Latitude  : ");
-  Serial.println(gps.location.lat(), 6);
+  Serial.println(gps.location.lat(), 6); //Variável com valor de latitude,  imprimi no terminal com 6 digitos.
   Serial.print("Longitude : ");
-  Serial.println(gps.location.lng(), 6);
+  Serial.println(gps.location.lng(), 6); //Variável com valor de longitude,  imprimi no terminal com 6 digitos.
   Serial.print("Satellites: ");
-  Serial.println(gps.satellites.value());
+  Serial.println(gps.satellites.value()); //Variável com valor de satélites conectados.
   Serial.print("Altitude  : ");
-  Serial.print(gps.altitude.feet() / 3.2808);
-  alt = gps.altitude.feet() / 3.2808;
+  Serial.print(gps.altitude.feet() / 3.2808); //Variável com valor de altitude.
+  alt = gps.altitude.feet() / 3.2808; //Salva o valor de altitute na variavel "alt" para envio de criação de pacote.
   Serial.println("M");
   Serial.print("Time      : ");
-  Serial.print(gps.time.hour());
+  Serial.print(gps.time.hour()); //Variável de hora.
   Serial.print(":");
-  Serial.print(gps.time.minute());
+  Serial.print(gps.time.minute()); //Variável de minuto.
   Serial.print(":");
-  Serial.println(gps.time.second());
+  Serial.println(gps.time.second()); //Variável de segundo.
   Serial.println("**********************");
 
-  gps_payload(gps.location.lat(),gps.location.lng(), alt);
+  gps_payload(gps.location.lat(),gps.location.lng(), alt); //Envia os valores do GPS (Lat, Long, Alt) para a criação do payload.
 
   smartDelay(1000);                                      
   
   if (millis() > 5000 && gps.charsProcessed() < 10)
-    Serial.println(F("No GPS data received: check wiring"));
+    Serial.println(F("No GPS data received: check wiring")); //Caso não encontre antena.
 }
 
+
+/*
+  Função de Delay
+*/
 static void smartDelay(unsigned long ms)                
 {
   unsigned long start = millis();
@@ -54,23 +58,22 @@ static void smartDelay(unsigned long ms)
   } while (millis() - start < ms);
 }
 
-
+/*
+  Função para a criação do Payload e imprimi o payload em Hexa no monitor serial.
+*/
 void gps_payload(float lat, float lon, int alt) {
 
   uint32_t LatitudeBinary = 0;
   uint32_t LongitudeBinary = 0;
 
+  // Caso o valor de lat não seja zero, faz a multiplicação dos valores para que não sejam enviados com ",".
   if (lat != 0){
     LatitudeBinary = (lat  * 10000);
     LongitudeBinary = (lon  * 10000);
     alt = alt * 100;
-    Serial.println(lat, 6);
-    //Serial.println(LatitudeBinary);
-    Serial.println(lon, 6);
-    //Serial.println(LongitudeBinary);
-    Serial.println(alt);
   }
   
+  //Inicializa e cria o payload
   uint8_t payload[10];
 
   payload[0] = LatitudeBinary >> 24 ;
@@ -85,17 +88,8 @@ void gps_payload(float lat, float lon, int alt) {
 
   payload[8] = alt >> 8;
   payload[9] = alt;
-  
-  //Serial.print(payload[0], HEX);
-  Serial.print(payload[1], HEX);
-  Serial.print(payload[2], HEX);
-  Serial.println(payload[3], HEX);
 
-  Serial.print(payload[4], HEX);
-  Serial.print(payload[5], HEX);
-  Serial.print(payload[6], HEX);
-  Serial.println(payload[7], HEX);
-
+  // Imprime os valores de Payload (neste caso são bytes)
   int x = 0;
   for (x=0; x <=9; x++) {
     Serial.print(payload[x], HEX);
